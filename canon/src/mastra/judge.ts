@@ -8,7 +8,7 @@ import type { z } from "zod";
  * to a JSON tool call that can send an array as a string. "outputFormat"
  * forces native mode; other providers ignore it.
  */
-export async function judge<S extends z.ZodTypeAny>(
+export async function judge<S extends z.ZodType>(
   agent: Agent,
   prompt: string,
   schema: S,

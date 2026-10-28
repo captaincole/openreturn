@@ -34,7 +34,7 @@
     "hono": "^4.13.7",
     "mastra": "^1.35.0",
     "unpdf": "^1.6.0",
-    "zod": "^3.25.76"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@cantoo/pdf-lib": "^2.11.1",

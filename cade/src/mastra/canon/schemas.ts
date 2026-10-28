@@ -42,7 +42,7 @@ export const askResultSchema = z.object({
   coverage: z.enum(["covered", "partial", "not_covered"]),
   citations: z.array(askCitationSchema),
   missingDocuments: z.array(z.string()),
-  log: z.object({ steps: z.array(z.record(z.unknown())) }),
+  log: z.object({ steps: z.array(z.record(z.string(), z.unknown())) }),
 });
 export type AskResult = z.infer<typeof askResultSchema>;
 
@@ -51,7 +51,7 @@ export const askRunResultSchema = z.discriminatedUnion("status", [
   z.object({
     status: z.literal("failed"),
     error: z.string(),
-    log: z.object({ steps: z.array(z.record(z.unknown())) }),
+    log: z.object({ steps: z.array(z.record(z.string(), z.unknown())) }),
   }),
 ]);
 export type AskRunResult = z.infer<typeof askRunResultSchema>;
