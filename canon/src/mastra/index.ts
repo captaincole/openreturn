@@ -6,7 +6,6 @@ import { createObservability } from "./server/observability";
 import { requestGuard } from "./server/requestGuard";
 import { listRefDocsRoute, refDocHtmlRoute, refDocPdfRoute } from "./server/routes/refdocs";
 import { createStorage } from "./server/storage";
-import { keepServingAfterClientLeft } from "./server/streamGuard";
 import { tokenGate } from "./server/tokenGate";
 import { askWorkflow } from "./workflows/ask";
 import { askAnswerer } from "./workflows/ask/judges/askAnswerer";
@@ -24,7 +23,6 @@ import { ruleAgent } from "./workflows/ground/judges/ruleAgent";
 const storage = await createStorage();
 
 const logger = new ConsoleLogger({ name: "canon", level: "info" });
-keepServingAfterClientLeft(logger);
 
 export const mastra = new Mastra({
   agents: { askQueryFormulator, askAnswerer, queryFormulator, assessRiskAgent, ruleAgent },

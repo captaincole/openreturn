@@ -10,7 +10,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
     "@mastra/core": "^1.79.0",
-    "@mastra/mcp": "^1.18.0",
+    "@mastra/mcp": "^2.5.0",
     "@napi-rs/canvas": "^0.1.100",
     "@openreturn/engine": "0.1.0",
     "@openreturn/sources": "0.1.0",

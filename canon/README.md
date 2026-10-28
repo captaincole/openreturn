@@ -5,7 +5,7 @@
 Canon (`@openreturn/canon`) is OpenReturn's tax attorney. It holds the IRS and FTB reference library, searches it, answers tax-code questions with citations, and grounds each of Cade's decisions in the published text. Canon is a [Mastra](https://mastra.ai) project and an [MCP](https://modelcontextprotocol.io) server on port 4112. It has no user data and no conversation of its own.
 
 <p align="center">
-  <img src="../static/screenshots/studio-canon.png" alt="Canon's MCP server in Mastra Studio: the HTTP, SSE and CLI endpoints, and the four tools searchRefDocs, citeRefDoc, run_ask and run_ground with their descriptions" width="880">
+  <img src="../static/screenshots/studio-canon.png" alt="Canon's MCP server in Mastra Studio: the HTTP and CLI endpoints, and the four tools searchRefDocs, citeRefDoc, run_ask and run_ground with their descriptions" width="880">
   <br/><em>Canon's MCP server in Mastra Studio (http://localhost:4112): four tools, the whole surface.</em>
 </p>
 
@@ -53,7 +53,7 @@ npm run dev:canon          # Canon only, with Mastra Studio at http://localhost:
 npm run corpus             # the corpus CLI; no arguments lists its commands
 ```
 
-MCP clients connect to `http://localhost:4112/api/mcp/canon/mcp` (streamable HTTP) or `/api/mcp/canon/sse`. Cade's client is `cade/src/mastra/canon/client.ts`. The web app reads the library through its `/api/canon` proxy.
+MCP clients connect to `http://localhost:4112/api/mcp/canon/mcp` (streamable HTTP, the MCP protocol of 2026-07-28; there is no `/sse` endpoint). Cade's client is `cade/src/mastra/canon/client.ts`. The web app reads the library through its `/api/canon` proxy.
 
 ## The corpus CLI
 

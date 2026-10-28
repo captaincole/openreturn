@@ -23,7 +23,7 @@
     "@libsql/client": "^0.17.4",
     "@mastra/core": "^1.79.0",
     "@mastra/libsql": "^1.27.0",
-    "@mastra/mcp": "^1.18.0",
+    "@mastra/mcp": "^2.5.0",
     "@mastra/observability": "^1.21.0",
     "dotenv": "^17.4.2",
     "hono": "^4.13.7",
