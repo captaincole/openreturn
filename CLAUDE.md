@@ -167,7 +167,7 @@ Two paths:
 
 ## Mastra schema
 
-The runtime store is `@mastra/libsql` (pinned; see `server/storage.ts` and `agents/cade.ts` — agents with `memory: new Memory({ storage })` create their own store instance against the same `mastra.db` file). Mastra runs its own idempotent `init()` on boot — a handful of local `CREATE TABLE IF NOT EXISTS` statements, cheap enough that the old `disableInit` + standalone-migration machinery is gone. On `@mastra/*` version bumps, the framework migrates its own schema; keep `mastra.db` separate from `app.db` so that can never touch user data.
+The runtime store is `@mastra/libsql` (see `server/storage.ts`). Cade's `Memory` has no storage of its own: Mastra hands it the instance store, so threads and messages share `mastra.db` with the workflow snapshots. Mastra runs its own idempotent `init()` on boot — a handful of local `CREATE TABLE IF NOT EXISTS` statements, cheap enough that the old `disableInit` + standalone-migration machinery is gone. On `@mastra/*` version bumps, the framework migrates its own schema; keep `mastra.db` separate from `app.db` so that can never touch user data.
 
 ## Data-model iteration: wipe + re-ingest, not migrations
 

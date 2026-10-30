@@ -1,8 +1,6 @@
 import { Agent } from "@mastra/core/agent";
-import { LibSQLStore } from "@mastra/libsql";
 import { Memory } from "@mastra/memory";
 import { modelFor } from "../models";
-import { mastraDbUrl } from "../server/storage";
 import { listAIDecisions, recordAIDecision } from "../tools/aiDecisions";
 import { getCaseState } from "../tools/caseState";
 import { dismissRequestedAction } from "../tools/dismissRequestedAction";
@@ -22,8 +20,6 @@ export const cade = new Agent({
   inputProcessors: [new PdfAttachmentRasterizer()],
   /* A turn is about 5 steps; 20 leaves room for batched scope decisions. */
   defaultOptions: { maxSteps: 20, modelSettings: { maxOutputTokens: INGEST_MAX_OUTPUT_TOKENS } },
-  defaultGenerateOptionsLegacy: { maxSteps: 20 },
-  defaultStreamOptionsLegacy: { maxSteps: 20 },
   tools: {
     getCaseState,
     ...ingestTools,
@@ -36,12 +32,12 @@ export const cade = new Agent({
     resolveOpenQuestion,
     listAIDecisions,
   },
+  /*
+   * No storage of its own: Memory uses the Mastra instance's store
+   * (server/storage.ts), so threads and messages live in mastra.db with
+   * the rest of the runtime state.
+   */
   memory: new Memory({
-    /* Same mastra.db file, separate store instance: Memory owns its storage lifecycle. */
-    storage: new LibSQLStore({
-      id: "cade-memory",
-      url: mastraDbUrl(),
-    }),
     options: {
       /* One thread per user and return year, so working memory follows each filing. */
       workingMemory: {

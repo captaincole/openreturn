@@ -1,9 +1,9 @@
 import { type AnyExportedSpan, type CustomSpanFormatter } from "@mastra/core/observability";
-import { ConsoleExporter, DefaultExporter, Observability } from "@mastra/observability";
+import { ConsoleExporter, MastraStorageExporter, Observability } from "@mastra/observability";
 
 /*
  * ConsoleExporter dumps whole spans, system prompt and base64 uploads included. An
- * allowlist keeps the dev terminal readable; DefaultExporter keeps the full trace for Studio.
+ * allowlist keeps the dev terminal readable; MastraStorageExporter keeps the full trace for Studio.
  */
 const ALLOW_KEYS = new Set([
   "id",
@@ -68,8 +68,8 @@ export function createObservability(): Observability {
       default: {
         serviceName: "openreturn",
         exporters: isDev
-          ? [new ConsoleExporter({ customSpanFormatter: formatSpan }), new DefaultExporter()]
-          : [new DefaultExporter()],
+          ? [new ConsoleExporter({ customSpanFormatter: formatSpan }), new MastraStorageExporter()]
+          : [new MastraStorageExporter()],
       },
     },
   });

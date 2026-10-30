@@ -1,10 +1,10 @@
 import { type AnyExportedSpan, type CustomSpanFormatter } from "@mastra/core/observability";
-import { ConsoleExporter, DefaultExporter, Observability } from "@mastra/observability";
+import { ConsoleExporter, MastraStorageExporter, Observability } from "@mastra/observability";
 
 /*
  * ConsoleExporter dumps every full span, which floods the dev terminal.
  * An allowlist (not a blocklist) also drops keys a future Mastra version
- * adds. DefaultExporter still stores the full trace for Studio.
+ * adds. MastraStorageExporter still stores the full trace for Studio.
  */
 const ALLOW_KEYS = new Set([
   "id",
@@ -69,8 +69,8 @@ export function createObservability(): Observability {
       default: {
         serviceName: "openreturn",
         exporters: isDev
-          ? [new ConsoleExporter({ customSpanFormatter: formatSpan }), new DefaultExporter()]
-          : [new DefaultExporter()],
+          ? [new ConsoleExporter({ customSpanFormatter: formatSpan }), new MastraStorageExporter()]
+          : [new MastraStorageExporter()],
       },
     },
   });
