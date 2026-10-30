@@ -119,7 +119,7 @@ function structuredValue(name: string, raw: unknown): unknown {
   return (raw as { result?: unknown } | null)?.result;
 }
 
-export async function callCanon<S extends z.ZodTypeAny>(
+export async function callCanon<S extends z.ZodType>(
   name: string,
   input: unknown,
   schema: S,

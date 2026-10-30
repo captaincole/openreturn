@@ -21,7 +21,7 @@ import { z } from "zod";
  * A run that does not succeed is a tool error (isError on the wire):
  * the client's failure path, not a result to parse.
  */
-export function runWorkflowTool<O extends z.ZodTypeAny>(workflow: Workflow, runResult: O) {
+export function runWorkflowTool<O extends z.ZodType>(workflow: Workflow, runResult: O) {
   return createTool({
     id: `run_${workflow.id}`,
     description: workflow.description ?? `Run the ${workflow.id} workflow.`,
