@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { modelFor } from "../models";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { listAIDecisions, recordAIDecision } from "../tools/aiDecisions";
 import { getCaseState } from "../tools/caseState";
 import { dismissRequestedAction } from "../tools/dismissRequestedAction";
@@ -17,6 +18,11 @@ export const cade = new Agent({
   name: "Cade",
   instructions: cadeInstructions,
   model: modelFor("cade"),
+  /*
+   * The owner identity ownerMiddleware sets, validated before the first
+   * model call (server/requestContext.ts). Every tool declares the same.
+   */
+  requestContextSchema: cadeRequestContextSchema,
   inputProcessors: [new PdfAttachmentRasterizer()],
   /* A turn is about 5 steps; 20 leaves room for batched scope decisions. */
   defaultOptions: { maxSteps: 20, modelSettings: { maxOutputTokens: INGEST_MAX_OUTPUT_TOKENS } },

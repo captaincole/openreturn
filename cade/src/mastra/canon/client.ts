@@ -109,28 +109,14 @@ function toolErrorText(raw: unknown): string | null {
 }
 
 /*
- * A tool with an output schema arrives structured. A workflow tool has none, so its run
- * arrives as JSON text in `content`; any status but "success" is a Canon failure.
+ * Canon serves its workflows as tools with output schemas
+ * (canon/src/mastra/tools/runWorkflow.ts); each answers
+ * `{ result: <run result> }`, the run result being the workflow's own
+ * output (status ok | failed). Other tools answer their object directly.
  */
-function unwrap(name: string, raw: unknown): unknown {
-  const r = raw as McpResult | null;
-  let value = raw;
-  if (r && typeof r === "object" && Array.isArray(r.content)) {
-    const text = r.content
-      .filter((c) => c.type === "text")
-      .map((c) => c.text ?? "")
-      .join("");
-    try {
-      value = JSON.parse(text);
-    } catch {
-      throw new CanonToolError(`Canon ${name} returned non-JSON content: ${text.slice(0, 200)}`);
-    }
-  }
-  if (!name.startsWith("run_")) return value;
-  const run = value as { status?: string; result?: unknown; error?: unknown } | null;
-  if (!run || typeof run !== "object" || !("status" in run)) return value;
-  if (run.status === "success") return run.result;
-  throw new CanonToolError(`Canon ${name} ${run.status}: ${errorMessage(run.error)}`);
+function structuredValue(name: string, raw: unknown): unknown {
+  if (!name.startsWith("run_")) return raw;
+  return (raw as { result?: unknown } | null)?.result;
 }
 
 export async function callCanon<S extends z.ZodTypeAny>(
@@ -147,7 +133,7 @@ export async function callCanon<S extends z.ZodTypeAny>(
   }
   const failure = toolErrorText(raw);
   if (failure) throw new CanonToolError(`Canon ${name} failed: ${failure}`);
-  const parsed = schema.safeParse(unwrap(name, raw));
+  const parsed = schema.safeParse(structuredValue(name, raw));
   if (!parsed.success) {
     throw new CanonToolError(`Canon ${name} returned an unexpected shape: ${parsed.error.message}`);
   }

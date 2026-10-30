@@ -1,5 +1,6 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { accountSlugFor, statementContext, statementFields } from "./ingestShared";
 import { ingestTrades, TradeInputSchema } from "./ingestTrades";
 
@@ -12,6 +13,7 @@ export const MAX_TRADES_PER_CALL = 20;
 
 export const ingest1099B = createTool({
   id: "ingest-1099-b",
+  requestContextSchema: cadeRequestContextSchema,
   description: `Ingest the sales on a 1099-B (standalone, or the 1099-B section of a consolidated statement) or a 1099-DA. Pass at most ${MAX_TRADES_PER_CALL} sales per call. For more, call again with the next ${MAX_TRADES_PER_CALL} and the same payer and accountSlug; each call adds to the earlier ones.`,
   inputSchema: z.object({
     ...statementFields,

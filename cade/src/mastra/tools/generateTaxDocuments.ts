@@ -10,6 +10,7 @@ import { z } from "zod";
 import { createDocument } from "../db/userDocuments";
 import { loadBlankPdf } from "../formAssets";
 import { loadAndEvaluateScenario } from "../loadScenario";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { buildCaseStateForScenario } from "./caseState";
 import { requireUserContext } from "./userContext";
 
@@ -201,6 +202,7 @@ function pendingInputsResult(pendingDecisions: string[], pendingFacts: string[])
 
 export const generateTaxDocuments = createTool({
   id: "generate-tax-documents",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Render the taxpayer's filed forms as PDFs using the form engine. Runs the multi-form evaluator against the current facts and decisions, looks up each catalog field's PDF widget, and writes the value. Returns a list of {formId, url} entries for each form whose mustFile predicate evaluates true, plus a JSON sidecar with the evaluated forms. Call at hand-off (no pending decisions, all required facts present). The tool refuses while any input is pending. Marked draft / not-for-filing — a CPA reviews before submission. Produces Form 1040, plus any of: Form 8949 / Schedule D when the taxpayer has reportable capital sales, Schedule CA (540) and Form 540 when the taxpayer is a CA filer. READ THE RESULT CAREFULLY: if status is 'pending_inputs', NO forms were generated — record each key in pendingDecisions (record-ai-decision) and pendingFacts (record-tax-facts, up to 5 per call; ask the user when you do not know the value), then call this tool again. If status is 'no_forms_rendered', NO forms were generated — tell the user that, report the blockers (record any missingDecisionKey listed), and do NOT present any links or dollar amounts. When forms ARE generated, present them by pasting markdownLinks verbatim — never compose or alter document URLs yourself.",
   inputSchema: z.object({

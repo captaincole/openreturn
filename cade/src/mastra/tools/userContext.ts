@@ -1,8 +1,8 @@
-import { MASTRA_RESOURCE_ID_KEY } from "@mastra/core/request-context";
+import type { RequestContext } from "@mastra/core/request-context";
 import type { Scope } from "../db/appDb";
 import { resolveOwnerFilingForYear } from "../db/filings";
 import { DEMO_TAX_YEAR } from "../server/demoSession";
-import { REQUEST_CONTEXT_KEYS } from "../server/ownerMiddleware";
+import type { CadeRequestContext } from "../server/requestContext";
 
 export interface UserContext {
   userId: string;
@@ -14,13 +14,13 @@ export interface UserContext {
 
 /* Throws when a value cannot resolve: a misconfiguration must surface, not hide behind defaults. */
 export async function requireUserContext(
-  toolContext: { requestContext?: { get: (key: string) => unknown } } | undefined,
+  toolContext: { requestContext?: RequestContext<CadeRequestContext> } | undefined,
 ): Promise<UserContext> {
   const rc = toolContext?.requestContext;
   if (!rc)
     throw new Error("requestContext missing — was this tool called outside an authed request?");
-  const userId = rc.get(MASTRA_RESOURCE_ID_KEY) as string | undefined;
-  const authEmail = (rc.get(REQUEST_CONTEXT_KEYS.userEmail) as string | undefined) ?? null;
+  const userId = rc.get("userId");
+  const authEmail = rc.get("userEmail") ?? null;
   if (!userId)
     throw new Error("owner missing — complete first-run setup in the web app before chatting");
   const taxYear = DEMO_TAX_YEAR;

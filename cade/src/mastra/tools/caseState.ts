@@ -10,6 +10,7 @@ import { z } from "zod";
 import type { Scope } from "../db/appDb";
 import { resolveOwnerFilingForYear } from "../db/filings";
 import { loadAndEvaluateScenario } from "../loadScenario";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { requireUserContext } from "./userContext";
 
 type EvaluatedFormSummary = {
@@ -151,6 +152,7 @@ const moneyLine = z
 
 export const getCaseState = createTool({
   id: "get-case-state",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Returns live case state: per-form summaries (must-file + line count + blockers), aggregated pending decisions and missing facts across all forms, and money convenience fields (wages, AGI, tax, withholding, refund/owed). Call at the start of every turn to know what's required, what's blocked, and what to ask next. The user is identified automatically — pass only the tax year.",
   inputSchema: z.object({

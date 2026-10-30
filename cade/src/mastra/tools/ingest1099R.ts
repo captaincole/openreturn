@@ -4,6 +4,7 @@ import {
   type RetirementDistributionFactValue,
 } from "@openreturn/engine/facts";
 import { z } from "zod";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { PayerSchema, recordIngestFact, slugify, type IngestCtx } from "./ingestShared";
 import { requireUserContext } from "./userContext";
 
@@ -40,6 +41,7 @@ const BoxesSchema = z.object({
 
 export const ingest1099R = createTool({
   id: "ingest-1099-r",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Ingest one Form 1099-R (distributions from pensions, annuities, retirement plans, IRAs). Call ONCE per 1099-R form; a payer that sends two forms (e.g. code G and code H) needs two calls. Writes one fact under category 'retirement'.",
   inputSchema: z.object({

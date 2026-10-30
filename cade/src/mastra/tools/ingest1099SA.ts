@@ -4,6 +4,7 @@ import {
   type HsaDistributionFactValue,
 } from "@openreturn/engine/facts";
 import { z } from "zod";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { PayerSchema, recordIngestFact, slugify, type IngestCtx } from "./ingestShared";
 import { requireUserContext } from "./userContext";
 
@@ -14,6 +15,7 @@ import { requireUserContext } from "./userContext";
 
 export const ingest1099SA = createTool({
   id: "ingest-1099-sa",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Ingest one Form 1099-SA (HSA, Archer MSA or Medicare Advantage MSA distribution). Call ONCE per form. Writes one fact under category 'hsa'. Then ask the user whether every distribution paid qualified medical expenses, if not yet known.",
   inputSchema: z.object({

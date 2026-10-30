@@ -4,6 +4,7 @@ import {
   type HouseholdEmployeeFactValue,
 } from "@openreturn/engine/facts";
 import { z } from "zod";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { recordIngestFact, slugify, type IngestCtx } from "./ingestShared";
 import { requireUserContext } from "./userContext";
 
@@ -11,6 +12,7 @@ import { requireUserContext } from "./userContext";
 
 export const ingestHouseholdW2 = createTool({
   id: "ingest-household-w2",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Ingest one W-2 that the USER issued to their household employee (nanny, housekeeper, caregiver): the user's own name is in box c (employer). Not for the user's own W-2s (use ingest-w2-structured). Call ONCE per household employee W-2. Writes one fact under category 'household_employment' for Schedule H. Then ask whether the user paid $1,000 or more in cash wages to household employees in any calendar quarter of 2024 or 2025.",
   inputSchema: z.object({

@@ -3,6 +3,7 @@ import { makeW2FactKey, type W2FactValue } from "@openreturn/engine/facts";
 import { z } from "zod";
 import type { Scope } from "../db/appDb";
 import { recordFact } from "../db/taxFacts";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { requireUserContext } from "./userContext";
 
 const AddressSchema = z.object({
@@ -65,6 +66,7 @@ function toW2FactValue(input: {
 
 export const ingestW2 = createTool({
   id: "ingest-w2-structured",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Ingest a single W-2 as a structured tax fact. Cade (or whatever upstream extractor) reads the W-2 PDF and calls this with all the box values. Writes ONE tax_facts row with the full W-2 data; the Form Engine reads it via the fact catalog. Call once per W-2.",
   inputSchema: z.object({

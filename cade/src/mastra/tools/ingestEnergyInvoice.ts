@@ -5,6 +5,7 @@ import {
   type EnergyInvoiceFactValue,
 } from "@openreturn/engine/facts";
 import { z } from "zod";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { recordIngestFact, slugify, type IngestCtx } from "./ingestShared";
 import { requireUserContext } from "./userContext";
 
@@ -34,6 +35,7 @@ export function energyInvoiceSlug(input: {
 
 export const ingestEnergyInvoice = createTool({
   id: "ingest-energy-invoice",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Ingest one invoice or receipt for home energy improvements (Form 5695 Part II). Call ONCE per invoice, with one item per piece of property. Not for solar panels, batteries, geothermal, or wind (Part I, not supported yet: say so). Writes one fact under category 'home_energy'. Then ask the home questions (main home in the U.S., original user, expected to last 5 years, related to building a new home) if they are not recorded yet.",
   inputSchema: z.object({

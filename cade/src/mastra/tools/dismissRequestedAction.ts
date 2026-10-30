@@ -1,10 +1,12 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { getAppDb, nowIso } from "../db/appDb";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { requireUserContext } from "./userContext";
 
 export const dismissRequestedAction = createTool({
   id: "dismiss-requested-action",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Close a dashboard upload card after you've successfully ingested the document the user uploaded. Pass the same documentType string you used when you called request-document-upload (or the canonical doc name if it was uploaded without a card). Matches the most recent open or processing action with that document type. Safe to call even when no matching card exists.",
   inputSchema: z.object({

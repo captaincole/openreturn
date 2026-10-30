@@ -1,6 +1,7 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { listFacts, listOpenQuestions, recordFacts, resolveQuestion } from "../db/taxFacts";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { requireUserContext } from "./userContext";
 
 const CATEGORIES = [
@@ -46,6 +47,7 @@ const factInput = z.object({
 
 export const recordTaxFacts = createTool({
   id: "record-tax-facts",
+  requestContextSchema: cadeRequestContextSchema,
   description: `Store 1 to ${MAX_FACTS_PER_CALL} confirmed tax facts for the current user/year in one call. Put every fact from the user's message in the same call; split more than ${MAX_FACTS_PER_CALL} facts into several calls. Only record a value the user has explicitly stated or confirmed — never invent or guess. Give each fact a sourceNote describing where the value came from (e.g. 'W-2 Box 1 from Stripe, 2025', 'verbal confirmation during 2026-04-19 intake'). The user is identified automatically via auth — you don't need to track an id.`,
   inputSchema: z.object({
     year: z.number().int().describe("Tax year (e.g. 2025)"),
@@ -80,6 +82,7 @@ export const recordTaxFacts = createTool({
 
 export const listTaxFacts = createTool({
   id: "list-tax-facts",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "List previously recorded tax facts for the current user. Use before asking a question to avoid re-asking something already confirmed, and when preparing a summary.",
   inputSchema: z.object({
@@ -114,6 +117,7 @@ export const listTaxFacts = createTool({
 
 export const listOpenQuestionsTool = createTool({
   id: "list-open-questions",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "List unresolved questions/gaps for the current user. Use at the start of a session to pick up where the last one left off, and before generating a summary.",
   inputSchema: z.object({
@@ -141,6 +145,7 @@ export const listOpenQuestionsTool = createTool({
 
 export const resolveOpenQuestion = createTool({
   id: "resolve-open-question",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Mark an open question as resolved once the user has answered it and the fact has been recorded.",
   inputSchema: z.object({

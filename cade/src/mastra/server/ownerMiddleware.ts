@@ -1,6 +1,7 @@
 import { MASTRA_RESOURCE_ID_KEY } from "@mastra/core/request-context";
 import type { MiddlewareHandler } from "hono";
 import { getOwner } from "../db/appDb";
+import { REQUEST_CONTEXT_KEYS } from "./requestContext";
 import { bearerMatches } from "./requestGuard";
 
 /*
@@ -9,10 +10,6 @@ import { bearerMatches } from "./requestGuard";
  * reachable beyond localhost. The owner id on MASTRA_RESOURCE_ID_KEY scopes Mastra memory.
  * Before first-run setup there is no owner: requests still flow, and tools throw.
  */
-
-export const REQUEST_CONTEXT_KEYS = {
-  userEmail: "userEmail",
-} as const;
 
 const PROTECTED_PREFIXES = ["/api/", "/app/"];
 
@@ -29,6 +26,7 @@ export const ownerMiddleware: MiddlewareHandler = async (c, next) => {
     const owner = await getOwner();
     if (owner) {
       requestContext.set(MASTRA_RESOURCE_ID_KEY, owner.id);
+      requestContext.set(REQUEST_CONTEXT_KEYS.userId, owner.id);
       requestContext.set(REQUEST_CONTEXT_KEYS.userEmail, owner.email);
     }
   }

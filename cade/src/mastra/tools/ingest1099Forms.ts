@@ -8,6 +8,7 @@ import {
   type MiscIncomeFactValue,
 } from "@openreturn/engine/facts";
 import { z } from "zod";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { recordIngestFact, statementContext, statementFields } from "./ingestShared";
 
 /*
@@ -34,6 +35,7 @@ interface FormSpec<V> {
 function formTool<V extends { payerName: string; payerTin?: string }>(spec: FormSpec<V>) {
   return createTool({
     id: spec.id,
+    requestContextSchema: cadeRequestContextSchema,
     description: `${spec.description} ${ONLY_NON_ZERO}`,
     inputSchema: z.object({ ...statementFields, ...(spec.boxes as z.ZodRawShape) }),
     outputSchema: z.object({ accountSlug: z.string(), factKey: z.string() }),

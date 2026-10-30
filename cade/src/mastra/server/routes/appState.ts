@@ -6,7 +6,7 @@ import { resolveOwnerFilingForYear } from "../../db/filings";
 import { listDocuments, type UserDocumentRow } from "../../db/userDocuments";
 import { buildCaseState } from "../../tools/caseState";
 import { DEMO_TAX_YEAR } from "../demoSession";
-import { REQUEST_CONTEXT_KEYS } from "../ownerMiddleware";
+import { REQUEST_CONTEXT_KEYS } from "../requestContext";
 
 // Must match web/lib/returns.ts:threadIdFor — no shared package yet.
 function threadIdFor(userId: string, returnId: string | number): string {

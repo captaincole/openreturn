@@ -1,11 +1,13 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { listDecisions, recordDecision } from "../db/aiDecisions";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { enqueueReview, retryAfter } from "../workflows/reviewDecision";
 import { requireUserContext } from "./userContext";
 
 export const recordAIDecision = createTool({
   id: "record-ai-decision",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Record a judgment call the agent made that isn't a direct user-stated fact. Use when the user's situation is ambiguous or underdetermined and the agent must interpret it (e.g. 'full-year CA resident despite 3 months in NV', 'W-2 income classified as wages not self-employment'). MUST include a rationale explaining the reasoning, which facts supported it, and a confidence level. After the decision is recorded, a background review-decision workflow runs (gather facts + IRS guidance, assess risk, rule). The tool returns IMMEDIATELY with verdict='pending' — keep going. The verdict updates on the row when the review completes; an open_questions row is created if more facts are needed.",
   inputSchema: z.object({
@@ -98,6 +100,7 @@ export const recordAIDecision = createTool({
 
 export const listAIDecisions = createTool({
   id: "list-ai-decisions",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "List previously recorded AI decisions for the current user. Use to review what judgment calls have been made and avoid duplicating or contradicting them.",
   inputSchema: z.object({

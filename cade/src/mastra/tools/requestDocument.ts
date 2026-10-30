@@ -1,10 +1,12 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { getAppDb, nowIso } from "../db/appDb";
+import { cadeRequestContextSchema } from "../server/requestContext";
 import { requireUserContext } from "./userContext";
 
 export const requestDocumentUpload = createTool({
   id: "request-document-upload",
+  requestContextSchema: cadeRequestContextSchema,
   description:
     "Surface a structured document-upload request to the user as a card on their dashboard. Use ONLY when you need a specific tax document (W-2, 1099, K-1, 1098, etc.) and can't proceed without it — never for facts you can ask conversationally. Call once per document needed; don't repeat on subsequent turns. Returns the action id.",
   inputSchema: z.object({
