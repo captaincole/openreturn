@@ -1,9 +1,8 @@
-import type { Mastra } from "@mastra/core";
 import { MASTRA_RESOURCE_ID_KEY } from "@mastra/core/request-context";
 import { registerApiRoute } from "@mastra/core/server";
 import type { Context } from "hono";
 import { addAskTurn, createAskThread, getAskThread } from "../../db/askThreads";
-import { runAskTurn } from "../../workflows/askTurn";
+import { askTurnWorkflow } from "../../workflows/askTurn";
 
 const MAX_QUESTION_CHARS = 2000;
 
@@ -17,11 +16,10 @@ async function readQuestion(c: Context): Promise<string | null> {
   return q && q.length <= MAX_QUESTION_CHARS ? q : null;
 }
 
-function startTurn(c: Context, userId: string, threadId: string, turnId: string): void {
-  const mastra = c.get("mastra") as Mastra;
-  void runAskTurn(userId, threadId, turnId).catch((err) => {
-    mastra.getLogger().error("ask turn failed", { threadId, turnId, err });
-  });
+/* Start the run and return; the workflow's onError marks the turn failed if it dies. */
+async function startTurn(userId: string, threadId: string, turnId: string): Promise<void> {
+  const run = await askTurnWorkflow.createRun({ resourceId: userId });
+  await run.startAsync({ inputData: { userId, threadId, turnId } });
 }
 
 export const createAskRoute = registerApiRoute("/app/ask", {
@@ -33,7 +31,7 @@ export const createAskRoute = registerApiRoute("/app/ask", {
     if (!question) return c.json({ error: "question required" }, 400);
 
     const { threadId, turnId } = await createAskThread(userId, question);
-    startTurn(c, userId, threadId, turnId);
+    await startTurn(userId, threadId, turnId);
     return c.json({ threadId, turnId });
   },
 });
@@ -53,7 +51,7 @@ export const addAskTurnRoute = registerApiRoute("/app/ask/:threadId/turns", {
         ? c.json({ error: "a question is still being answered" }, 409)
         : c.json({ error: "not found" }, 404);
     }
-    startTurn(c, userId, threadId, result.turnId);
+    await startTurn(userId, threadId, result.turnId);
     return c.json({ threadId, turnId: result.turnId });
   },
 });

@@ -12,6 +12,7 @@ import { deleteFilingRoute } from "./server/routes/deleteFiling";
 import { retryReviewsRoute } from "./server/routes/retryReviews";
 import { sessionResetRoute } from "./server/routes/sessionReset";
 import { createStorage } from "./server/storage";
+import { askTurnWorkflow } from "./workflows/askTurn";
 import { reviewDecisionWorkflow } from "./workflows/reviewDecision";
 
 const storage = await createStorage();
@@ -22,7 +23,7 @@ const logger = new ConsoleLogger({ name: "openreturn", level: "info" });
 export const mastra = new Mastra({
   /* The one agent. Grounding and tax-code answers come from Canon over MCP (canon/client.ts). */
   agents: { cade },
-  workflows: { reviewDecision: reviewDecisionWorkflow },
+  workflows: { reviewDecision: reviewDecisionWorkflow, askTurn: askTurnWorkflow },
   storage,
   logger,
   observability: createObservability(),

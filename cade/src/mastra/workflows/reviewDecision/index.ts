@@ -11,10 +11,22 @@ import {
 } from "./schemas";
 import { finalizeStep, groundStep, initStep } from "./steps";
 
+/*
+ * init → ground → finalize; the judges run in Canon. A failed run stamps the decision from
+ * onError (review_unreached: Canon never got the call; review_failed: the review broke), so
+ * every run ends definitively wherever it was started. Mastra awaits onError and logs its throws.
+ */
 export const reviewDecisionWorkflow = createWorkflow({
   id: "review-decision",
   inputSchema: reviewInputSchema,
   outputSchema: reviewDecisionOutputSchema,
+  options: {
+    onError: async ({ error, steps, getInitData }) => {
+      const input = reviewInputSchema.parse(getInitData());
+      const scope = { userId: input.userId, filingId: input.filingId };
+      await recordReviewFailure(scope, failureOutput(input.decisionId, error, steps));
+    },
+  },
 })
   .then(initStep)
   .then(groundStep)
@@ -35,22 +47,13 @@ export async function reviewDecision(
   requestContext.set(MASTRA_RESOURCE_ID_KEY, scope.userId);
 
   const run = await reviewDecisionWorkflow.createRun({ resourceId: scope.userId });
-
-  try {
-    const result = await run.start({
-      inputData: { decisionId, userId: scope.userId, filingId: scope.filingId },
-      requestContext,
-    });
-    if (result.status === "success") {
-      return result.result;
-    }
-    if (result.status === "failed") {
-      throw result.error;
-    }
-    throw new Error(`review-decision: unexpected workflow status '${result.status}'`);
-  } catch (err) {
-    return recordReviewFailure(scope, decisionId, err);
-  }
+  const result = await run.start({
+    inputData: { decisionId, userId: scope.userId, filingId: scope.filingId },
+    requestContext,
+  });
+  if (result.status === "success") return result.result;
+  if (result.status === "failed") return failureOutput(decisionId, result.error, result.steps);
+  throw new Error(`review-decision: unexpected workflow status '${result.status}'`);
 }
 
 /* One at a time: the judges share one model, so parallel reviews time out together. */
@@ -92,50 +95,48 @@ export function retryAfter(scope: Scope, out: ReviewDecisionOutput): Promise<unk
   return retryUnreachedReviews(scope, out.decisionId);
 }
 
-async function recordReviewFailure(
-  scope: Scope,
+/* init's output carries the run id; when init failed only ai_decisions is stamped. */
+function failureOutput(
   decisionId: string,
   err: unknown,
-): Promise<ReviewDecisionOutput> {
-  const reason = errorMessage(err);
-  const finalVerdict = isCanonUnreachable(err) ? "review_unreached" : "review_failed";
-  try {
-    await setDecisionVerdict(scope, decisionId, finalVerdict, reason, null);
-  } catch {
-    /* The original error is what matters. */
-  }
-  /* The ground step attaches a run id; an init failure has none. */
-  const runId = findRunId(err);
-  if (runId) {
-    try {
-      await completeReviewRun(scope, {
-        id: runId,
-        status: "failed",
-        finalVerdict,
-        iterationCount: 0,
-        durationMs: 0,
-        error: reason,
-      });
-    } catch {
-      /* Best-effort. */
-    }
-  }
+  steps: Record<string, { status: string; output?: unknown }>,
+): ReviewDecisionOutput {
+  const initOutput = steps.init?.status === "success" ? steps.init.output : undefined;
+  const reviewRunId = (initOutput as { reviewRunId?: string } | undefined)?.reviewRunId ?? "";
   return {
     decisionId,
-    reviewRunId: runId ?? "",
+    reviewRunId,
     iterationCount: 0,
     riskTier: null,
-    finalVerdict,
-    reason,
+    finalVerdict: isCanonUnreachable(err) ? "review_unreached" : "review_failed",
+    reason: errorMessage(err),
     citations: [],
   };
 }
 
-/* Mastra may wrap a step's error; look for the run id along the cause chain. */
-function findRunId(err: unknown): string | undefined {
-  for (let e = err; e; e = (e as { cause?: unknown }).cause) {
-    const id = (e as { reviewRunId?: string }).reviewRunId;
-    if (id) return id;
+/*
+ * Best-effort failure recording: stamp the decision row and, when init
+ * opened one, the review_runs row, so Cade (and the trace log) see why
+ * the run failed. Each write is its own try: the original error is what
+ * matters.
+ */
+async function recordReviewFailure(scope: Scope, out: ReviewDecisionOutput): Promise<void> {
+  try {
+    await setDecisionVerdict(scope, out.decisionId, out.finalVerdict, out.reason, null);
+  } catch {
+    /* swallow — the original error is what matters */
   }
-  return undefined;
+  if (!out.reviewRunId) return;
+  try {
+    await completeReviewRun(scope, {
+      id: out.reviewRunId,
+      status: "failed",
+      finalVerdict: out.finalVerdict,
+      iterationCount: 0,
+      durationMs: 0,
+      error: out.reason,
+    });
+  } catch {
+    /* swallow */
+  }
 }

@@ -91,20 +91,10 @@ export const groundStep = createStep({
   outputSchema: reviewCarrierSchema,
   execute: async ({ inputData: carrier }) => {
     const scope = { userId: carrier.userId, filingId: carrier.filingId };
-    /*
-     * The run id lets the wrapper stamp review_unreached (no answer) or review_failed
-     * (a judge broke). Canon's step log is stored on failure too.
-     */
-    const withRunId = (err: unknown) =>
-      Object.assign(err instanceof Error ? err : new Error(String(err)), {
-        reviewRunId: carrier.reviewRunId,
-      });
     const run = await groundCanon({
       decision: carrier.decision,
       facts: carrier.facts,
       maxIterations: groundMaxIterations(),
-    }).catch((err: unknown) => {
-      throw withRunId(err);
     });
     for (const step of run.log.steps) {
       await recordReviewStep(scope, {
@@ -119,7 +109,7 @@ export const groundStep = createStep({
         durationMs: step.durationMs,
       });
     }
-    if (run.status === "failed") throw withRunId(new CanonToolError(`Canon ground: ${run.error}`));
+    if (run.status === "failed") throw new CanonToolError(`Canon ground: ${run.error}`);
     const { status: _status, ...ground } = run;
     return { ...carrier, ground };
   },
